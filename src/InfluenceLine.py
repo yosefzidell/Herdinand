@@ -21,6 +21,10 @@ class BeamInfluenceLine:
         self.create_spacing_button = tk.Button(root, text="Next", command=self.create_spacing_fields)
         self.create_spacing_button.pack()
 
+        # Reset Button
+        self.reset_button = tk.Button(root, text="Reset", command=self.reset)
+        self.reset_button.pack()
+
         # Create plot
         self.figure = plt.Figure(figsize=(10, 5), dpi=100)
         self.axes1 = self.figure.add_subplot(211)
@@ -35,7 +39,7 @@ class BeamInfluenceLine:
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
 
-
+        self.cursor = None
 
 
     def create_spacing_fields(self):
@@ -155,6 +159,10 @@ class BeamInfluenceLine:
         self.axes2.set_xlim(-1, sum(spacings)+1)
         self.axes2.set_ylim(-1.5, 1.5)
 
+        # Clear old hovers 
+        if self.cursor:
+            self.cursor.remove()
+
         # Add cursor functionality to the influence line plot
         cursor = mplcursors.cursor(line, hover=True)
         cursor.connect("add", lambda sel: sel.annotation.set_text(f"x: {sel.target[0]:.2f}, y: {sel.target[1]:.2f}"))
@@ -162,6 +170,33 @@ class BeamInfluenceLine:
 
         # Update plot
         self.canvas.draw()
+
+   
+   
+    def reset(self):
+        self.supports_entry.delete(0, tk.END)
+        if hasattr(self, 'spacing_entries'):
+            for entry in self.spacing_entries:
+                entry.destroy()
+
+        # Clear plots
+        self.axes1.clear()
+        self.axes2.clear()
+        self.axes1.set_title("Beam Diagram")
+        self.axes2.set_title("Influence Line")
+        self.canvas.draw()
+
+        # Clear cursor annotations
+        if self.cursor and hasattr(self.cursor, 'annotations'):
+            for annotation in self.cursor.annotations:
+                annotation.remove()
+            self.cursor.annotations = []
+
+        # Clear the slider and buttons
+        if hasattr(self, 'location_slider'):
+            self.location_slider.destroy()
+        if hasattr(self, 'update_button'):
+            self.update_button.destroy()
 
 
 
