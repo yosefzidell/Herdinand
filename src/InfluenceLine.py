@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.patches as patches
 import numpy as np
+import mplcursors
+
 
 class BeamInfluenceLine:
     def __init__(self, root):
@@ -145,10 +147,17 @@ class BeamInfluenceLine:
              x = np.arange(0, sum(spacings), .01)
              y = [1 for i in x]
 
+        # Capture the line object
+        line, = self.axes2.plot(x, y)
+
         self.axes2.plot(x, y)
         self.axes2.axhline(y=0, color='r', linestyle='-')  # Add horizontal red line for x-axis
         self.axes2.set_xlim(-1, sum(spacings)+1)
         self.axes2.set_ylim(-1.5, 1.5)
+
+        # Add cursor functionality to the influence line plot
+        cursor = mplcursors.cursor(line, hover=True)
+        cursor.connect("add", lambda sel: sel.annotation.set_text(f"x: {sel.target[0]:.2f}, y: {sel.target[1]:.2f}"))
 
 
         # Update plot
