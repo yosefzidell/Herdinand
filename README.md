@@ -5,4 +5,5 @@ on the beam while a load P is placed at point 'c' on the beam, where 'x' is a va
 the force effect at 'c' point on the beam while the load 'P=1 unit' is placed at a point 'x' on the beam, where 'x' is a variable and 'c' is a constant. 
 what this program does is easily create an influence line diagram based on user inputs, while also allowing the user to effectively use 'c' as a variable as well.
 the user can slide 'c' along the beam length and the program will generate new influence lines in real time. The total behavior of a beam under a moving load 'P'
-can be understood in seconds. 
+can be understood in seconds. The user is able to determine the number of joints (joints are simply supported by default), the end joint conditions (Simple , Moment, or no support i.e. Overhang), and the spacing between joints.
+the user can also select shear or moment influence line diagrams. 
