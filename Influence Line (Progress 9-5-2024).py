@@ -12,9 +12,11 @@ class BeamInfluenceLine:
         self.root = root
         self.root.title("Influence Line")
 
+
         # Reset Button
         self.reset_button = tk.Button(root, text="Reset", command=self.reset)
         self.reset_button.place(x=.9,y=.5)
+        self.widgets = []
 
         # Create input field for number of supports
         self.supports_label = tk.Label(root, text="step 1: click on dropdown menu below to select number of supports.")
@@ -97,8 +99,10 @@ class BeamInfluenceLine:
         self.canvas.mpl_connect('motion_notify_event', update_coords)
 
     def create_spacing_fields(self):
+
         # Get number of supports
         self.info = tk.Label(root, text="step 3: determine the support types in the beam diagram, and the spacing between supports below. then click 'update plot'. ")
+        self.widgets.append(self.info)
         self.info.pack()
 
         num_supports = self.variable.get()
@@ -143,6 +147,7 @@ class BeamInfluenceLine:
             spacing_label.pack()
             spacing_entry = tk.Entry(self.root, width=5, )
             spacing_entry.insert(0, 5)
+            self.widgets.append(self.spacing_entries)
 
 
             spacing_entry.pack()
@@ -150,18 +155,22 @@ class BeamInfluenceLine:
 
         # Create button to update plot
         self.update_button = tk.Button(self.root, text="Update Plot", command=self.update_plot)
+        self.widgets.append(self.update_button)
         self.update_button.pack()
         # Create Slider for influence line section of interest
         self.space = tk.Label(self.root, text="")
+        self.widgets.append(self.space)
         self.space.pack()
-        self.slider_label = tk.Label(self.root, text="step 4: drag slider below to the influence position on the beam, indicated by the dashed red line in the Beam Diagram. you can hover over the influence Line to see the influence value.")
+        self.slider_label = tk.Label(self.root, text="step 4: drag slider below for influence location.")
+        self.widgets.append(self.slider_label)
         self.slider_label.pack()
 
         self.location_slider = tk.Scale(self.root, from_=0,
                                         to=1,
                                         resolution=0.01,
                                         orient=tk.HORIZONTAL,
-                                        command=self.update_plot, length=900, sliderlength=10, tickinterval=.1)
+                                        command=self.update_plot, length=900, sliderlength=10, tickinterval=.1, label="Influence location as a percentage of beam length",font=("Helvetica", 12, "bold"))
+        self.widgets.append(self.location_slider)
         self.location_slider.pack()
 
 
@@ -358,16 +367,20 @@ class BeamInfluenceLine:
 
                     # Now that we have the Ay and By reactions for all load positions, we can determine the influence value
                     # for "location"
-                    if c == 0:
-                        y = np.array([i for i in A_y])
-                    if c < L1:
-                        y = np.array([i - 1 if j < c else i for i, j in zip(A_y, x)])
-                    elif c == L1:
-                        y = np.array([i for i in B_y])
-                    elif c<L:
-                        y = np.array([(i + k - 1) if j < c else (i + k) for i, k, j in zip(A_y, B_y, x)])
-                    else:
-                        y = np.array([-i for i in C_y])
+                    if self.variable2.get() == self.forces[0]:  # shear influence line selected
+                        if c < L1:
+                            y = np.array([i - 1 if j < c else i for i, j in zip(A_y, x)])
+                        elif c == L1:
+                            y = np.array([i for i in B_y])
+                        else:
+                            y = np.array([(i + k - 1) if j < c else (i + k) for i, k, j in zip(A_y, B_y, x)])
+                    else:  # moment influence line selected
+                        if c <= L1:
+                            y = np.array([i * c - (c - j) if j < c else i * c for i, j in zip(A_y, x)])
+                        else:
+                            y = np.array(
+                                [i * c - (c - j) + k * (c - L1) if j < c else i * c + k * (c - L1) for i, j, k in
+                                 zip(A_y, x, B_y)])
                 elif self.bubble_S1_status == True and self.bubble_M2_status == True:
                     #Moment support on right
                     # determine middle support By using its redundant deflection
@@ -528,10 +541,11 @@ class BeamInfluenceLine:
             self.canvas.draw()
 
     def reset(self):
-        self.variable.delete(0, tk.END)
-        if hasattr(self, 'spacing_entries'):
-            for entry in self.spacing_entries:
-                entry.destroy()
+        self.variable.set(f'{self.options[0]}')
+        self.variable2.set(self.forces[0])
+
+        for widget in self.widgets:
+            widget.destroy()
 
         # Clear plots
         self.axes1.clear()
