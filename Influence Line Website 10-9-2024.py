@@ -18,7 +18,7 @@ server = app.server  # For deployment if needed
 
 
 # Helper function to create the Matplotlib figure
-def create_beam_figure(n_supports,spacings,left,right):
+def create_beam_figure(n_supports,spacings,left,right,location):
 
     fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(14, 6))
 
@@ -76,12 +76,12 @@ def create_beam_figure(n_supports,spacings,left,right):
         if not x_position==0:
 
             ax[0].annotate(
-                '', xy=(x_position, -.2), xytext=(x_position-spacing, -.2),  # Starting and ending points of the arrow
+                '', xy=(x_position, -.75), xytext=(x_position-spacing, -.75),  # Starting and ending points of the arrow
                 arrowprops=dict(arrowstyle='<->', lw=2)  # Two-way arrow style with linewidth
             )
 
             # Add text in the middle of the arrow
-            ax[0].text(x_position, -.1, 'Two-way Arrow', fontsize=1, ha='center')
+            ax[0].text(x_position-spacing/2, -.6, f'{spacing} ft')
 
     # Set the axis limits
     ax[0].set_xlim(-1, beam_length + 1)
@@ -96,7 +96,7 @@ def create_beam_figure(n_supports,spacings,left,right):
     #create influence line subplot
 
     x = np.arange(0, beam_length, .01)
-    y = np.array([i ** 2 for i in x])
+
     ax[1].plot(x, y)
     ax[1].set_xlim(-1, beam_length + 1)
     ax[1].set_ylim(-1, max(y))
@@ -290,14 +290,15 @@ def update_sum(values):
     [Input('support-dropdown', 'value'),
      Input({'type': 'input-box', 'index': ALL}, 'value'),
      Input('left-dropdown','value'),
-     Input('right-dropdown','value')],
+     Input('right-dropdown','value'),
+     Input('slider-x', 'value')],
 )
-def update_beam(n_supports,values,left,right):
+def update_beam(n_supports,values,left,right,location):
     # create a list of current support spacings
 
     spacings = [i if i is not None else 0 for i in values]
     spacings.insert(0,0)
-    return create_beam_figure(n_supports,spacings,left,right)
+    return create_beam_figure(n_supports,spacings,left,right,location)
 
 
 
